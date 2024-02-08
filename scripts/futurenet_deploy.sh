@@ -19,7 +19,7 @@ echo "Optimize contracts..."
 
 soroban contract optimize --wasm soroban_token_contract.wasm
 soroban contract optimize --wasm phoenix_factory.wasm
-soroban contract optimize --wasm phoenix_pair.wasm
+soroban contract optimize --wasm phoenix_pool.wasm
 soroban contract optimize --wasm phoenix_stake.wasm
 
 echo "Contracts optimized."
@@ -93,7 +93,7 @@ soroban contract invoke \
 
 echo "Tokens initialized."
 
-echo "Install the soroban_token, phoenix_pair and phoenix_stake contracts..."
+echo "Install the soroban_token, phoenix_pool and phoenix_stake contracts..."
 
 TOKEN_WASM_HASH=$(soroban contract install \
     --wasm soroban_token_contract.optimized.wasm \
@@ -102,7 +102,7 @@ TOKEN_WASM_HASH=$(soroban contract install \
 
 # Continue with the rest of the deployments
 PAIR_WASM_HASH=$(soroban contract install \
-    --wasm phoenix_pair.optimized.wasm \
+    --wasm phoenix_pool.optimized.wasm \
     --source $IDENTITY_STRING \
     --network testnet)
 
