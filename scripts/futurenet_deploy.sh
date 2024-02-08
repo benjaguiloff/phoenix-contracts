@@ -32,17 +32,17 @@ echo "Deploy the soroban_token_contract and capture its contract ID hash..."
 TOKEN_ADDR1=$(soroban contract deploy \
     --wasm soroban_token_contract.optimized.wasm \
     --source $IDENTITY_STRING \
-    --network futurenet)
+    --network testnet)
 
 TOKEN_ADDR2=$(soroban contract deploy \
     --wasm soroban_token_contract.optimized.wasm \
     --source $IDENTITY_STRING \
-    --network futurenet)
+    --network testnet)
 
 FACTORY_ADDR=$(soroban contract deploy \
     --wasm phoenix_factory.optimized.wasm \
     --source $IDENTITY_STRING \
-    --network futurenet)
+    --network testnet)
 
 echo "Tokens and factory deployed."
 
@@ -60,7 +60,7 @@ echo "Initialize factory..."
 soroban contract invoke \
     --id $FACTORY_ADDR \
     --source $IDENTITY_STRING \
-    --network futurenet \
+    --network testnet \
     -- \
     initialize \
     --admin $ADMIN_ADDRESS
@@ -72,7 +72,7 @@ echo "Initialize the token contracts..."
 soroban contract invoke \
     --id $TOKEN_ID1 \
     --source $IDENTITY_STRING \
-    --network futurenet \
+    --network testnet \
     -- \
     initialize \
     --admin $ADMIN_ADDRESS \
@@ -83,7 +83,7 @@ soroban contract invoke \
 soroban contract invoke \
     --id $TOKEN_ID2 \
     --source $IDENTITY_STRING \
-    --network futurenet \
+    --network testnet \
     -- \
     initialize \
     --admin $ADMIN_ADDRESS \
@@ -98,18 +98,18 @@ echo "Install the soroban_token, phoenix_pair and phoenix_stake contracts..."
 TOKEN_WASM_HASH=$(soroban contract install \
     --wasm soroban_token_contract.optimized.wasm \
     --source $IDENTITY_STRING \
-    --network futurenet)
+    --network testnet)
 
 # Continue with the rest of the deployments
 PAIR_WASM_HASH=$(soroban contract install \
     --wasm phoenix_pair.optimized.wasm \
     --source $IDENTITY_STRING \
-    --network futurenet)
+    --network testnet)
 
 STAKE_WASM_HASH=$(soroban contract install \
     --wasm phoenix_stake.optimized.wasm \
     --source $IDENTITY_STRING \
-    --network futurenet)
+    --network testnet)
 
 echo "Token, pair and stake contracts deployed."
 
@@ -119,7 +119,7 @@ echo "Initialize pair using the previously fetched hashes through factory..."
 soroban contract invoke \
     --id $FACTORY_ADDR \
     --source $IDENTITY_STRING \
-    --network futurenet \
+    --network testnet \
     -- \
     create_liquidity_pool \
     --lp_init_info "{ \"admin\": \"${ADMIN_ADDRESS}\", \"lp_wasm_hash\": \"${PAIR_WASM_HASH}\", \"share_token_decimals\": 7, \"swap_fee_bps\": 1000, \"fee_recipient\": \"${ADMIN_ADDRESS}\", \"max_allowed_slippage_bps\": 10000, \"max_allowed_spread_bps\": 10000, \"token_init_info\": { \"token_wasm_hash\": \"${TOKEN_WASM_HASH}\", \"token_a\": \"${TOKEN_ID1}\", \"token_b\": \"${TOKEN_ID2}\" }, \"stake_init_info\": { \"stake_wasm_hash\": \"${STAKE_WASM_HASH}\", \"min_bond\": \"100\", \"min_reward\": \"100\", \"max_distributions\": 3 } }"
@@ -127,7 +127,7 @@ soroban contract invoke \
 PAIR_ADDR=$(soroban contract invoke \
     --id $FACTORY_ADDR \
     --source $IDENTITY_STRING \
-    --network futurenet --fee 100 \
+    --network testnet --fee 100 \
     -- \
     query_pools | jq -r '.[0]')
 
@@ -137,14 +137,14 @@ echo "Mint both tokens to the admin and provide liquidity..."
 soroban contract invoke \
     --id $TOKEN_ID1 \
     --source $IDENTITY_STRING \
-    --network futurenet \
+    --network testnet \
     -- \
     mint --to $ADMIN_ADDRESS --amount 100000000000
 
 soroban contract invoke \
     --id $TOKEN_ID2 \
     --source $IDENTITY_STRING \
-    --network futurenet \
+    --network testnet \
     -- \
     mint --to $ADMIN_ADDRESS --amount 100000000000
 
@@ -152,7 +152,7 @@ soroban contract invoke \
 soroban contract invoke \
     --id $PAIR_ADDR \
     --source $IDENTITY_STRING \
-    --network futurenet --fee 10000000 \
+    --network testnet --fee 10000000 \
     -- \
     provide_liquidity --sender $ADMIN_ADDRESS --desired_a 100000000000 --desired_b 50000000000
 
@@ -164,7 +164,7 @@ echo "Bond tokens to stake contract..."
 STAKE_ADDR=$(soroban contract invoke \
     --id $PAIR_ADDR \
     --source $IDENTITY_STRING \
-    --network futurenet --fee 10000000 \
+    --network testnet --fee 10000000 \
     -- \
     query_stake_contract_address | jq -r '.')
 
@@ -172,7 +172,7 @@ STAKE_ADDR=$(soroban contract invoke \
 soroban contract invoke \
     --id $STAKE_ADDR \
     --source $IDENTITY_STRING \
-    --network futurenet \
+    --network testnet \
     -- \
     bond --sender $ADMIN_ADDRESS --tokens 70000000000
 
