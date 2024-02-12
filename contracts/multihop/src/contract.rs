@@ -27,7 +27,6 @@ pub trait MultihopTrait {
         // FIXM: Disable Referral struct
         // referral: Option<Referral>,
         operations: Vec<Swap>,
-        max_belief_price: Option<i64>,
         max_spread_bps: Option<i64>,
         amount: i128,
     );
@@ -68,7 +67,6 @@ impl MultihopTrait for Multihop {
         // FIXM: Disable Referral struct
         // referral: Option<Referral>,
         operations: Vec<Swap>,
-        max_belief_price: Option<i64>,
         max_spread_bps: Option<i64>,
         amount: i128,
     ) {
@@ -91,24 +89,14 @@ impl MultihopTrait for Multihop {
 
             let lp_client = lp_contract::Client::new(&env, &liquidity_pool_addr);
             // FIXM: Disable Referral struct
-            // if let Some(referral) = referral.clone() {
-            //     next_offer_amount = lp_client.swap(
-            //         &recipient,
-            //         &Some(referral),
-            //         &op.offer_asset,
-            //         &next_offer_amount,
-            //         &max_belief_price,
-            //         &max_spread_bps,
-            //     );
-            // } else {
             next_offer_amount = lp_client.swap(
                 &recipient,
+                // &referral,
                 &op.offer_asset,
                 &next_offer_amount,
-                &max_belief_price,
+                &op.max_belief_price,
                 &max_spread_bps,
             );
-            // }
         });
     }
 
