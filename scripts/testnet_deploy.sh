@@ -27,7 +27,7 @@ echo "Contracts optimized."
 
 # Fetch the admin's address
 ADMIN_ADDRESS=$(soroban config identity address alice)
-echo "Admin address: $ADMIN_ADDRESS"
+
 
 echo "Deploy the soroban_token_contract and capture its contract ID hash..."
 
@@ -71,6 +71,11 @@ STAKE_WASM_HASH=$(soroban contract install \
     --source alice \
     --network testnet)
 
+MULTIHOP_WASM_HASH=$(soroban contract install \
+    --wasm phoenix_multihop.optimized.wasm \
+    --source alice \
+    --network testnet)
+
 echo "Token, pair and stake contracts deployed."
 
 # Sort the token addresses alphabetically
@@ -97,7 +102,10 @@ echo "Multihop initialized."
 
 echo "Initialize factory..."
 
-ADMIN_ADDRESS_HEX=$(node scripts/address_to_hex.js $ADMIN_ADDRESS)
+# ADMIN_ADDRESS_HEX=$(node scripts/address_to_hex.js $ADMIN_ADDRESS)
+
+# echo "Admin address: $ADMIN_ADDRESS"
+# echo "Admin address Hex: $ADMIN_ADDRESS_HEX"
 
 soroban contract invoke \
     --id $FACTORY_ADDR \
@@ -106,11 +114,11 @@ soroban contract invoke \
     -- \
     initialize \
     --admin $ADMIN_ADDRESS \
-    --multihop_wasm_hash $MULTIHOP_ADDR \
+    --multihop_wasm_hash $MULTIHOP_WASM_HASH \
     --lp_wasm_hash $PAIR_WASM_HASH \
     --stake_wasm_hash $STAKE_WASM_HASH \
     --token_wasm_hash $TOKEN_WASM_HASH \
-    --whitelisted_accounts "{\"vec\":[{\"address\": {\"contract\": \"$ADMIN_ADDRESS_HEX\"}}]}"
+    --whitelisted_accounts "{\"vec\":[{\"address\": \"$ADMIN_ADDRESS\"}]}"
 
 echo "Factory initialized."
 
@@ -148,7 +156,8 @@ soroban contract invoke \
     --network testnet \
     -- \
     create_liquidity_pool \
-    --lp_init_info "{ \"admin\": \"${ADMIN_ADDRESS}\", \"lp_wasm_hash\": \"${PAIR_WASM_HASH}\", \"share_token_decimals\": 7, \"swap_fee_bps\": 1000, \"fee_recipient\": \"${ADMIN_ADDRESS}\", \"max_allowed_slippage_bps\": 10000, \"max_allowed_spread_bps\": 10000, \"token_init_info\": { \"token_wasm_hash\": \"${TOKEN_WASM_HASH}\", \"token_a\": \"${TOKEN_ID1}\", \"token_b\": \"${TOKEN_ID2}\" }, \"stake_init_info\": { \"stake_wasm_hash\": \"${STAKE_WASM_HASH}\", \"min_bond\": \"100\", \"min_reward\": \"100\", \"max_distributions\": 3 } }"
+    --lp_init_info "{ \"admin\": \"${ADMIN_ADDRESS}\", \"lp_wasm_hash\": \"${PAIR_WASM_HASH}\", \"share_token_decimals\": 7, \"swap_fee_bps\": 1000, \"fee_recipient\": \"${ADMIN_ADDRESS}\", \"max_allowed_slippage_bps\": 10000, \"max_allowed_spread_bps\": 10000, \"max_referral_bps\": 10000, \"token_init_info\": { \"token_wasm_hash\": \"${TOKEN_WASM_HASH}\", \"token_a\": \"${TOKEN_ID1}\", \"token_b\": \"${TOKEN_ID2}\" }, \"stake_init_info\": { \"stake_wasm_hash\": \"${STAKE_WASM_HASH}\", \"min_bond\": \"100\", \"min_reward\": \"100\", \"max_distributions\": 3 } }" \
+    --caller $ADMIN_ADDRESS
 
 PAIR_ADDR=$(soroban contract invoke \
     --id $FACTORY_ADDR \
